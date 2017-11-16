@@ -22,6 +22,7 @@ body {
 		
 		var text;
 		var flag = 0;
+		var appleflag = false;
 		
 		function preload() {
 
@@ -31,21 +32,24 @@ body {
 			this.load.crossOrigin = 'anonymous';
 
 			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16, 16);
-			this.load.spritesheet('goomba', 'assets/goomba.png', 16, 16);
-			this.load.spritesheet('mario', 'assets/mario.png', 16, 16);
+			this.load.spritesheet('goomba', 'assets/goomba2.png', 16, 16);
+			this.load.spritesheet('mario', 'assets/mario1.png', 16, 16);
 			this.load.spritesheet('coin', 'assets/coin.png', 16, 16);
-			this.load.tilemap('level', 'assets/super_mario_map.json', null,
+			this.load.tilemap('level', 'assets/super_mario_map0.json', null,
 					Phaser.Tilemap.TILED_JSON);
 					
-			this.load.audio('sound','audio/ddevil.mp3');
+			this.load.audio('sound','audio/tsopanis.mp3');
 			this.load.audio('jumb','audio/jumb.wav');   //hxos otan o xarakthras phdaei
 			this.load.audio('koin','audio/coin.wav');	//hxos otan o xarakthras pairnei coins
 			this.load.audio('goat','audio/goat.wav');	//hxos otan o xarakthras pataei ena goomba
 			this.load.audio('fail','audio/fail.mp3');	//hxos otan o xarakthras xasei oles tis zwes-telos paixnidiou
+			this.load.image('apple','assets/apple.png', 16, 16);
 		}
 		var sound;
+		var apple;
 		var score = 0;
 		var lives = 2;
+		
 		function create()		{
 			var sound;
 			var koin;
@@ -56,7 +60,13 @@ body {
 				sound = game.add.audio('sound');
 				sound.play();
 			}
+			if (appleflag == false){
 			
+				apple = game.add.sprite(560, game.world.height - 176,'apple');
+				apples = game.add.group();
+				apple.enableBody = true;
+				game.physics.arcade.enable(apple);
+			}
 			Phaser.Canvas.setImageRenderingCrisp(game.canvas)
 			
 			game.scale.pageAlignHorizontally = true;
@@ -93,6 +103,9 @@ body {
 			goombas.setAll('body.velocity.x', -20);
 			goombas.setAll('body.gravity.y', 500);
 			
+			
+			
+			
 			var style = { font: "bold 16px Arial", fill: "#F2E600", boundsAlignH: "center", boundsAlignV: "middle" };
 			text = game.add.text(10, 5, "Score :"+score, style);
 			var style2 = { font: "bold 16px Arial", fill: "#FF0000", boundsAlignH: "center", boundsAlignV: "middle" };
@@ -118,6 +131,7 @@ body {
 
 			game.physics.arcade.collide(player, layer);
 			game.physics.arcade.collide(goombas, layer);
+			game.physics.arcade.collide(player, apple, appleOverlap); //ALLAGI
 			game.physics.arcade.overlap(player, goombas, goombaOverlap);
 			game.physics.arcade.overlap(player, coins, coinOverlap);
 
@@ -162,7 +176,15 @@ body {
 			score++;
 			text.text = 'Score :' + 100*score;
 		}
-
+		
+		function appleOverlap(player,apple){ // Manitari
+			
+			apple.kill();
+			apple.body.enable = false;
+			appleflag = true;
+			lives++;
+			livetext.text= 'Lives: ' +lives;
+		}
 		function goombaOverlap(player, goomba) {
 			if (player.body.touching.down) {
 				goat = game.add.audio('goat');
@@ -196,3 +218,4 @@ body {
 	</script>
 </body>
 </html>
+
