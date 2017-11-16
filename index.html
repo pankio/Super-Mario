@@ -28,8 +28,8 @@ body {
 
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
-			this.load.crossOrigin = 'anonymous';
+			//this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
+			//this.load.crossOrigin = 'anonymous';
 
 			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16, 16);
 			this.load.spritesheet('goomba', 'assets/goomba2.png', 16, 16);
@@ -39,11 +39,12 @@ body {
 					Phaser.Tilemap.TILED_JSON);
 					
 			this.load.audio('sound','audio/tsopanis.mp3');
-			this.load.audio('jumb','audio/jumb.wav');       //hxos otan o xarakthras phdaei
+			this.load.audio('jumb','audio/jumb.wav');   //hxos otan o xarakthras phdaei
 			this.load.audio('koin','audio/coin.wav');	//hxos otan o xarakthras pairnei coins
 			this.load.audio('goat','audio/goat.wav');	//hxos otan o xarakthras pataei ena goomba
 			this.load.audio('fail','audio/fail.mp3');	//hxos otan o xarakthras xasei oles tis zwes-telos paixnidiou
-			this.load.image('apple','assets/apple.png', 16, 16); //bonus
+			this.load.image('apple','assets/apple.png', 16, 16);
+			this.load.audio('bonusp','audio/bonusp.mp3');
 		}
 		var sound;
 		var apple;
@@ -55,7 +56,7 @@ body {
 			var koin;
 			var jumb;
 			var goat;
-			
+			var bonusp;
 			 if(flag==0){
 				sound = game.add.audio('sound');
 				sound.play();
@@ -178,8 +179,9 @@ body {
 		}
 		
 		function appleOverlap(player,apple){ // Manitari
-			
+			bonusp = game.add.audio('bonusp');
 			apple.kill();
+			bonusp.play();
 			apple.body.enable = false;
 			appleflag = true;
 			lives++;
