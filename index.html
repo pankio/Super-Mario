@@ -19,32 +19,72 @@ body {
 			create : create,
 			update : update
 		}, false, false);
-
+		
+		var text;
+		var flag = 0;
+		var appleflag = false;
+		
 		function preload() {
 
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
-			this.load.crossOrigin = 'anonymous';
+			//this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
+			//this.load.crossOrigin = 'anonymous';
 
-			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16,
-					16);
-			this.load.spritesheet('goomba', 'assets/goomba.png', 16, 16);
-			this.load.spritesheet('mario', 'assets/mario.png', 16, 16);
+			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16, 16);
+			this.load.spritesheet('goomba', 'assets/goomba2.png', 16, 16);
+			this.load.spritesheet('mario', 'assets/mario1.png', 16, 16);
 			this.load.spritesheet('coin', 'assets/coin.png', 16, 16);
-
-			this.load.tilemap('level', 'assets/super_mario_map.json', null,
+			this.load.spritesheet('ghost','assets/enemy.png',19,19);
+			this.load.tilemap('level', 'assets/super_mario_map0.json', null,
 					Phaser.Tilemap.TILED_JSON);
+					
+			this.load.audio('sound','audio/kagkelia.mp3');
+			this.load.audio('jumb','audio/jumb.wav');   //hxos otan o xarakthras phdaei
+			this.load.audio('koin','audio/coin.wav');	//hxos otan o xarakthras pairnei coins
+			this.load.audio('goat','audio/goat.wav');	//hxos otan o xarakthras pataei ena goomba
+			this.load.audio('fail','audio/fail.mp3');	//hxos otan o xarakthras xasei oles tis zwes-telos paixnidiou
+			this.load.image('apple','assets/apple.png', 16, 16);
+			this.load.audio('bonusp','audio/bonusp.mp3');
+			this.load.image('gmush','assets/gmush.png', 16, 16);
 		}
-
-		function create() {
+		var sound;
+		var apple;
+		var gmush;
+		var score = 0;
+		var lives = 2;
+		
+		function create()		{
+			var sound;
+			var koin;
+			var jumb;
+			var goat;
+			var bonusp;
+			if(flag==0){
+				sound = game.add.audio('sound');
+				sound.play();
+			}
+			
+			gmush = game.add.sprite(1745, game.world.height - 208,'gmush');
+			gmushs = game.add.group(); 
+			gmush.enableBody = true;
+			game.physics.arcade.enable(gmush);
+			
+			if (appleflag == false){
+			
+				apple = game.add.sprite(560, game.world.height - 176,'apple');
+				apples = game.add.group();
+				apple.enableBody = true;
+				game.physics.arcade.enable(apple);
+			}
 			Phaser.Canvas.setImageRenderingCrisp(game.canvas)
+			
 			game.scale.pageAlignHorizontally = true;
 			game.scale.pageAlignVertically = true
 			game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 			game.physics.startSystem(Phaser.Physics.ARCADE);
 
-			game.stage.backgroundColor = '#5c94fc';
+			game.stage.backgroundColor = '#0a6269';
 
 			map = game.add.tilemap('level');
 			map.addTilesetImage('tiles', 'tiles');
@@ -57,11 +97,12 @@ body {
 
 			coins = game.add.group();
 			coins.enableBody = true;
+			
 			map.createFromTiles(2, null, 'coin', 'stuff', coins);
 			coins.callAll('animations.add', 'animations', 'spin',
 					[ 0, 0, 1, 2 ], 3, true);
 			coins.callAll('animations.play', 'animations', 'spin');
-
+			
 			goombas = game.add.group();
 			goombas.enableBody = true;
 			map.createFromTiles(1, null, 'goomba', 'stuff', goombas);
@@ -71,7 +112,23 @@ body {
 			goombas.setAll('body.bounce.x', 1);
 			goombas.setAll('body.velocity.x', -20);
 			goombas.setAll('body.gravity.y', 500);
-
+			
+			ghosts= game.add.group();
+	
+			ghosts.enableBody = true;
+			map.createFromTiles(28, null, 'ghost', 'stuff', ghosts);
+			ghosts.callAll('animations.add', 'animations', 'walk', [ 0, 1, 2, 3 ], 4, true);
+			ghosts.callAll('animations.play', 'animations', 'walk');
+			ghosts.setAll('body.bounce.x', 1);
+			ghosts.setAll('body.velocity.x', -20);
+			ghosts.setAll('body.gravity.y', 500);
+			
+			
+			var style = { font: "bold 16px Arial", fill: "#F2E600", boundsAlignH: "center", boundsAlignV: "middle" };
+			text = game.add.text(10, 5, "Score :"+score, style);
+			var style2 = { font: "bold 16px Arial", fill: "#FF0000", boundsAlignH: "center", boundsAlignV: "middle" };
+			livetext = game.add.text(150, 5, 'Lives :'+lives, style2);
+		
 			player = game.add.sprite(16, game.world.height - 48, 'mario');
 			game.physics.arcade.enable(player);
 			player.body.gravity.y = 370;
@@ -81,15 +138,23 @@ body {
 			player.goesRight = true;
 
 			game.camera.follow(player);
-
+			
+			text.fixedToCamera = true;
+			livetext.fixedToCamera = true;
 			cursors = game.input.keyboard.createCursorKeys();
+			
 		}
-
+		
 		function update() {
+
 			game.physics.arcade.collide(player, layer);
 			game.physics.arcade.collide(goombas, layer);
+			game.physics.arcade.collide(ghosts, layer);
+			game.physics.arcade.collide(player, apple, appleOverlap); //ALLAGI
 			game.physics.arcade.overlap(player, goombas, goombaOverlap);
 			game.physics.arcade.overlap(player, coins, coinOverlap);
+			game.physics.arcade.overlap(player, ghosts, ghostOverlap);
+			game.physics.arcade.collide(player, gmush, gmushCollide);
 
 			if (player.body.enable) {
 				player.body.velocity.x = 0;
@@ -110,25 +175,72 @@ body {
 				}
 
 				if (cursors.up.isDown && player.body.onFloor()) {
+					jumb = game.add.audio('jumb');
+					jumb.play();
 					player.body.velocity.y = -190;
 					player.animations.stop();
 				}
 
 				if (player.body.velocity.y != 0) {
 					if (player.goesRight)
-						player.frame = 5;
+						player.frame = 5; 
 					else
 						player.frame = 12;
 				}
 			}
 		}
+		
+		function gmushCollide(player, gmush){
 
-		function coinOverlap(player, coin) {
-			coin.kill();
+			gmushs = game.add.audio('gmushs');
+			gmushs.play();
+			gmush.kill();
+			gmush.body.enable = false;
+			player.reset(1513,-150);
+		
 		}
-
+		
+		function coinOverlap(player, coin) {
+			koin = game.add.audio('koin');
+			coin.kill();
+			koin.play();
+			score++;
+			text.text = 'Score :' + 100*score;
+		}
+		
+		function appleOverlap(player,apple){ // Manitari
+			bonusp = game.add.audio('bonusp');
+			apple.kill();
+			bonusp.play();
+			apple.body.enable = false;
+			appleflag = true;
+			lives++;
+			livetext.text= 'Lives: ' +lives;
+		}
+		function ghostOverlap(player, ghost) {
+			if (player.body.touching.down) {
+				ghost.animations.stop();
+				ghost.body.enable = false;
+				player.body.velocity.y = -80;
+				game.time.events.add(Phaser.Timer.SECOND, function() {
+					ghost.kill();
+				});
+			} else {
+				player.frame = 6;
+				player.body.enable = false;
+				player.animations.stop();
+				if (lives>=1){
+					lives--;
+					score = 0;
+					flag=1;
+					game.state.start(game.state.current);
+				}
+		}
+		};
 		function goombaOverlap(player, goomba) {
 			if (player.body.touching.down) {
+				goat = game.add.audio('goat');
+				goat.play();
 				goomba.animations.stop();
 				goomba.frame = 2;
 				goomba.body.enable = false;
@@ -140,11 +252,24 @@ body {
 				player.frame = 6;
 				player.body.enable = false;
 				player.animations.stop();
+				if (lives>=1){
+					lives--;
+					score = 0;
+					flag=1;
+					game.state.start(game.state.current);
+				}
+				else{
+				fail = game.add.audio('fail');
+				fail.play();
 				game.time.events.add(Phaser.Timer.SECOND * 3, function() {
-					game.paused = true;
+				game.paused = true;
 				});
 			}
+			}
 		}
+		
+		
 	</script>
 </body>
 </html>
+
