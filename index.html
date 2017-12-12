@@ -64,7 +64,10 @@ body {
 			var goat;
 			var bonusp;
 			
-			
+			if(flag==0){
+				sound = game.add.audio('sound');
+				sound.play();
+			}
 			gmush = game.add.sprite(1745, game.world.height - 208,'gmush');
 			gmushs = game.add.group(); 
 			gmush.enableBody = true;
