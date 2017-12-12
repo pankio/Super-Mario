@@ -28,15 +28,15 @@ body {
 
 			//  We need this because the assets are on github pages
 			//  Remove the next 2 lines if running locally
-			this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
-			this.load.crossOrigin = 'anonymous';
+			//this.load.baseURL = 'https://pankio.github.io/Super-Mario/';
+			//this.load.crossOrigin = 'anonymous';
 
 			this.load.spritesheet('tiles', 'assets/super_mario_tiles.png', 16, 16);
 			this.load.spritesheet('goomba', 'assets/goomba2.png', 16, 16);
 			this.load.spritesheet('mario', 'assets/mario1.png', 16, 16);
 			this.load.spritesheet('coin', 'assets/coin.png', 16, 16);
-			this.load.spritesheet('ghost','assets/enemy.png',19,19);
-			this.load.tilemap('level', 'assets/super_mario_map0.json', null,
+			this.load.spritesheet('ghost','assets/enemy.png', 16, 15);
+			this.load.tilemap('level', 'assets/super_mario_map.json', null,
 					Phaser.Tilemap.TILED_JSON);
 					
 			this.load.audio('sound','audio/kagkelia.mp3');
@@ -47,23 +47,23 @@ body {
 			this.load.image('apple','assets/apple.png', 16, 16);
 			this.load.audio('bonusp','audio/bonusp.mp3');
 			this.load.image('gmush','assets/gmush.png', 16, 16);
+			this.load.image('door','assets/door.png', 34, 32);
+			game.load.image('menu', 'assets/sm.png', 800, 398);
 		}
 		var sound;
 		var apple;
 		var gmush;
 		var score = 0;
 		var lives = 2;
-		
+		var end;
+		var door;
 		function create()		{
 			var sound;
 			var koin;
 			var jumb;
 			var goat;
 			var bonusp;
-			if(flag==0){
-				sound = game.add.audio('sound');
-				sound.play();
-			}
+			
 			
 			gmush = game.add.sprite(1745, game.world.height - 208,'gmush');
 			gmushs = game.add.group(); 
@@ -77,6 +77,14 @@ body {
 				apple.enableBody = true;
 				game.physics.arcade.enable(apple);
 			}
+			
+			door = game.add.sprite(1980, game.world.height - 64,'door');
+			doors = game.add.group();
+			door.enableBody = true;
+			game.physics.arcade.enable(door);
+			
+			
+			
 			Phaser.Canvas.setImageRenderingCrisp(game.canvas)
 			
 			game.scale.pageAlignHorizontally = true;
@@ -106,18 +114,16 @@ body {
 			goombas = game.add.group();
 			goombas.enableBody = true;
 			map.createFromTiles(1, null, 'goomba', 'stuff', goombas);
-			goombas.callAll('animations.add', 'animations', 'walk', [ 0, 1 ],
-					2, true);
+			goombas.callAll('animations.add', 'animations', 'walk', [ 0, 1 ], 2, true);
 			goombas.callAll('animations.play', 'animations', 'walk');
 			goombas.setAll('body.bounce.x', 1);
 			goombas.setAll('body.velocity.x', -20);
 			goombas.setAll('body.gravity.y', 500);
 			
-			ghosts= game.add.group();
-	
+			ghosts = game.add.group();
 			ghosts.enableBody = true;
-			map.createFromTiles(28, null, 'ghost', 'stuff', ghosts);
-			ghosts.callAll('animations.add', 'animations', 'walk', [ 0, 1, 2, 3 ], 4, true);
+			map.createFromTiles(22, null, 'ghost', 'stuff', ghosts);
+			ghosts.callAll('animations.add', 'animations', 'walk', [ 0, 1 ], 2, true);
 			ghosts.callAll('animations.play', 'animations', 'walk');
 			ghosts.setAll('body.bounce.x', 1);
 			ghosts.setAll('body.velocity.x', -20);
@@ -155,7 +161,8 @@ body {
 			game.physics.arcade.overlap(player, coins, coinOverlap);
 			game.physics.arcade.overlap(player, ghosts, ghostOverlap);
 			game.physics.arcade.collide(player, gmush, gmushCollide);
-
+			game.physics.arcade.collide(player, door, doorCollide);
+			
 			if (player.body.enable) {
 				player.body.velocity.x = 0;
 				if (cursors.left.isDown) {
@@ -217,6 +224,22 @@ body {
 			lives++;
 			livetext.text= 'Lives: ' +lives;
 		}
+		
+		function doorCollide(player, door) {
+			doors = game.add.audio('door');
+			door.play();
+			door.kill();
+			//var style3 = { font: "bold 64px Arial", fill: "#88f931", boundsAlignH: "center", boundsAlignV: "middle" };
+			//text = game.add.text(80, 8, 'end', style3);
+			door.body.enable = false;
+			
+			//player.reset(1500,-150);
+			game.paused = true;
+			
+		}
+		
+		
+		
 		function ghostOverlap(player, ghost) {
 			if (player.body.touching.down) {
 				ghost.animations.stop();
